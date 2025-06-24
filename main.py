@@ -25,8 +25,6 @@ class Game:
         # setup
         self.setup()
 
-        # sprites
-
     def setup(self):
         map = load_pygame(join('data', 'maps', 'world.tmx'))
 
