@@ -2,7 +2,6 @@ import pygame.mouse
 from settings import *
 from math import atan2, degrees
 
-
 class Sprite(pygame.sprite.Sprite):
     def __init__(self, pos, surf, groups):
         super().__init__(groups)
@@ -25,7 +24,7 @@ class Gun(pygame.sprite.Sprite):
 
         # sprite setup
         super().__init__(groups)
-        self.gun_surf = pygame.image.load(join('images', 'gun', 'gun.png'))
+        self.gun_surf = pygame.image.load(join('images', 'gun', 'gun.png')).convert_alpha()
         self.image = self.gun_surf
         self.rect = self.image.get_frect(center = self.player.rect.center + self.player_direction * self.distance)
 
@@ -46,3 +45,21 @@ class Gun(pygame.sprite.Sprite):
         if self.player_direction.x < 0:
             self.image = pygame.transform.rotozoom(self.gun_surf, abs(angle), 1)
             self.image = pygame.transform.flip(self.image, False,True)
+
+class Bullet(pygame.sprite.Sprite):
+    def __init__(self, surf, pos, direction, groups):
+        super().__init__(groups)
+        self.image = surf
+        self.rect = self.image.get_frect(center = pos)
+
+        self.spawn_time = pygame.time.get_ticks()
+        self.lifetime = 1000
+
+        self.direction = direction
+        self.speed = 1200
+
+    def update(self, dt):
+        self.rect.center += self.direction * self.speed * dt
+
+        if pygame.time.get_ticks() >= self.lifetime + self.spawn_time:
+            self.kill()
