@@ -63,3 +63,49 @@ class Bullet(pygame.sprite.Sprite):
 
         if pygame.time.get_ticks() >= self.lifetime + self.spawn_time:
             self.kill()
+
+class Enemy(pygame.sprite.Sprite):
+    def __init__(self, pos, frames, player, collision_sprites, groups):
+        super().__init__(groups)
+        self.player = player
+
+        # image
+        self.frames, self.frame_index = frames, 0
+        self.image = self.frames[self.frame_index]
+        self.animation_speed = 6
+
+        # rect
+        self.rect = self.image.get_frect(center = pos)
+        self.hitbox_rect = self.rect.inflate(-20, -40)
+        self.collision_sprites = collision_sprites
+        self.direction = pygame.Vector2()
+        self.speed = 350
+
+    def update(self, dt):
+        self.move(dt)
+        self.animate(dt)
+
+    def move(self, dt):
+        player_pos = pygame.Vector2(self.player.rect.center)
+        enemy_pos = pygame.Vector2(self.rect.center)
+        self.direction = (player_pos - enemy_pos).normalize()
+
+        self.hitbox_rect.x += self.direction.x * self.speed * dt
+        self.collision('h')
+        self.hitbox_rect.y += self.direction.y * self.speed * dt
+        self.collision('v')
+        self.rect.center = self.hitbox_rect.center
+
+    def collision(self, direction):
+        for sprite in self.collision_sprites:
+            if sprite.rect.colliderect(self.hitbox_rect):
+                if direction == 'h':  # movimento horizontal
+                    if self.direction.x > 0: self.hitbox_rect.right = sprite.rect.left
+                    if self.direction.x < 0: self.hitbox_rect.left = sprite.rect.right
+                if direction == 'v':  # movimento vertical
+                    if self.direction.y > 0: self.hitbox_rect.bottom = sprite.rect.top
+                    if self.direction.y < 0: self.hitbox_rect.top = sprite.rect.bottom
+
+    def animate(self, dt):
+        self.frame_index += self.animation_speed * dt
+        self.image = self.frames[int(self.frame_index) % len(self.frames)]
